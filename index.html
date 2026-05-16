@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anlık Chat - Beni Hatırla Sürümü</title>
+    <title>Anlık Chat - APK Sürümü</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        body { background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
         .chat-container { width: 100%; max-width: 450px; height: 100vh; background: white; display: flex; flex-direction: column; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        
+
         /* Ekran Düzenleri */
         .screen { display: flex; flex-direction: column; height: 100%; justify-content: center; align-items: center; padding: 20px; width: 100%; max-width: 450px; background: white; overflow-y: auto; }
         .screen h2 { margin-bottom: 20px; color: #007bff; }
@@ -32,7 +32,7 @@
         .friends-section { width: 100%; flex: 1; display: flex; flex-direction: column; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
         .friends-section h3 { font-size: 16px; color: #555; margin-bottom: 10px; text-align: left; width: 100%; }
         .friends-list { width: 100%; display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; }
-        
+
         .friend-card { display: flex; align-items: center; gap: 12px; padding: 10px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef; cursor: pointer; transition: 0.2s; text-align: left; width: 100%; }
         .friend-card:hover { background: #e9ecef; }
         .friend-card img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #fff; }
@@ -44,25 +44,25 @@
         .header { background: #007bff; color: white; padding: 15px; display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: bold; position: relative; }
         .header .back-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; margin-top: 0; width: auto; padding: 0; }
         .header-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #fff; }
-        
+
         /* Mesaj Alanı ve Balonlar */
         .messages-area { flex: 1; padding: 15px; overflow-y: auto; background: #efeae2; display: flex; flex-direction: column; gap: 12px; }
-        
+
         .msg-wrapper { display: flex; align-items: flex-end; gap: 8px; max-width: 85%; }
         .msg-wrapper.giden { align-self: flex-end; flex-direction: row-reverse; }
         .msg-wrapper.gelen { align-self: flex-start; }
 
         .msg-avatar { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        
+
         .msg { padding: 10px 14px; border-radius: 15px; font-size: 15px; word-wrap: break-word; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .msg-wrapper.giden .msg { background: #d9fdd3; border-bottom-right-radius: 0; }
         .msg-wrapper.gelen .msg { background: white; border-bottom-left-radius: 0; }
-        
+
         /* Alt Mesaj Yazma Alanı */
         .input-area { padding: 10px; background: #f0f2f5; display: flex; gap: 8px; }
         .input-area input { margin: 0; flex: 1; }
         .input-area button { width: auto; padding: 0 20px; margin: 0; }
-        
+
         .hidden { display: none !important; }
     </style>
 </head>
@@ -78,7 +78,7 @@
         <h2>Yeni Hesap Oluştur</h2>
         <input type="text" id="reg-username" placeholder="Kullanıcı adı belirleyin...">
         <input type="password" id="reg-password" placeholder="Şifre belirleyin...">
-        
+
         <p style="margin-top: 15px; color: #666; font-size: 14px;">Profil Resmini Seç:</p>
         <div class="avatar-selection" id="register-avatar-picker"></div>
 
@@ -98,7 +98,7 @@
         <h2>Sohbet Paneli</h2>
         <div class="my-code-box" id="my-friend-code-display">Kodunuz: Yükleniyor...</div>
         <p id="welcome-text" style="margin-bottom: 15px; color: #555; text-align: center;"></p>
-        
+
         <input type="number" id="friend-code-input" placeholder="Arkadaşının 7 Haneli Kodu...">
         <button onclick="startChatByCode()">Yeni Sohbet Başlat</button>
 
@@ -130,30 +130,27 @@
         const firebaseConfig = {
             databaseURL: "https://tomoyunu-5cd2f-default-rtdb.europe-west1.firebasedatabase.app/" 
         };
-        
+
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-        
+
+        // APK içinde kırılma yaşanmaması için hazır yerel resimler yerine güvenli avatar dosyaları
         const avatarFiles = ["mini.flip.jpg", "mini.squeak.jpg", "mini.sugar.jpg", "mini.dot.jpg", "mini.gus.jpg"];
         let selectedAvatar = avatarFiles[0];
-        
-        // LocalStorage'dan (hafızadan) bilgileri kontrol et
+
         let myUsername = localStorage.getItem("saved_username") || "";
         let myFriendCode = localStorage.getItem("saved_code") || "";
 
         let friendUsername = "";
         let chatRoomId = "";
 
-        // Sayfa ilk yüklendiğinde hafıza kontrolü
         window.onload = function() {
             if (myUsername && myFriendCode) {
-                // Eğer hafızada kayıtlı kullanıcı varsa şifre istemeden direkt paneli aç!
                 database.ref("users/" + myUsername).once("value", (snapshot) => {
                     if (snapshot.exists()) {
                         selectedAvatar = snapshot.val().avatar;
                         showSearchScreen();
                     } else {
-                        // Eğer veritabanından silindiyse hafızayı temizle
                         localStorage.clear();
                         showScreen("auth-choice-screen");
                     }
@@ -163,7 +160,6 @@
             }
         };
 
-        // Profil Resmi Seçim Alanı
         const regPicker = document.getElementById("register-avatar-picker");
         avatarFiles.forEach((file, idx) => {
             const img = document.createElement("img");
@@ -186,7 +182,6 @@
             document.getElementById(screenId).classList.remove("hidden");
         }
 
-        // KAYIT OLMA
         function register() {
             const user = document.getElementById("reg-username").value.trim().toLowerCase();
             const pass = document.getElementById("reg-password").value.trim();
@@ -212,7 +207,6 @@
                     myUsername = user;
                     myFriendCode = generatedCode;
 
-                    // Beni Hatırla: Bilgileri hafızaya kilitle
                     localStorage.setItem("saved_username", myUsername);
                     localStorage.setItem("saved_code", myFriendCode);
 
@@ -221,7 +215,6 @@
             });
         }
 
-        // GİRİŞ YAPMA
         function login() {
             const user = document.getElementById("login-username").value.trim().toLowerCase();
             const pass = document.getElementById("login-password").value.trim();
@@ -235,8 +228,7 @@
                         myUsername = user;
                         myFriendCode = dbData.friendCode;
                         selectedAvatar = dbData.avatar;
-                        
-                        // Beni Hatırla: Bilgileri hafızaya kilitle
+
                         localStorage.setItem("saved_username", myUsername);
                         localStorage.setItem("saved_code", myFriendCode);
 
@@ -346,21 +338,21 @@
                     Object.values(data).forEach(msg => {
                         const wrapper = document.createElement("div");
                         wrapper.classList.add("msg-wrapper");
-                        
+
                         const avatarImg = document.createElement("img");
                         avatarImg.classList.add("msg-avatar");
                         avatarImg.src = msg.avatar || avatarFiles[0];
-                        
+
                         const msgDiv = document.createElement("div");
                         msgDiv.classList.add("msg");
                         msgDiv.innerText = msg.message;
-                        
+
                         if (msg.sender === myUsername) {
                             wrapper.classList.add("giden");
                         } else {
                             wrapper.classList.add("gelen");
                         }
-                        
+
                         wrapper.appendChild(avatarImg);
                         wrapper.appendChild(msgDiv);
                         container.appendChild(wrapper);
@@ -377,18 +369,17 @@
             showSearchScreen();
         }
 
-        // HESAPTAN ÇIKIŞ YAPMA (Hafızayı tamamen sıfırlar, böylece sonraki girişte şifre ister)
         function logout() {
             if(chatRoomId) database.ref("chats/" + chatRoomId).off();
             database.ref("user_friends/" + myUsername).off();
-            
-            localStorage.clear(); // Hafızayı sil!
-            
+
+            localStorage.clear();
+
             myUsername = "";
             myFriendCode = "";
             friendUsername = "";
             chatRoomId = "";
-            
+
             document.getElementById("login-username").value = "";
             document.getElementById("login-password").value = "";
             document.getElementById("reg-username").value = "";
