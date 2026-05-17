@@ -1,20 +1,19 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anlık Chat - Grup Destekli APK Sürümü</title>
+    <title>Anlık Chat, Çiz Bakalım & Özel Emojiler</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
         .chat-container { width: 100%; max-width: 450px; height: 100vh; background: white; display: flex; flex-direction: column; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
 
         /* Ekran Düzenleri */
-        .screen { display: flex; flex-direction: column; height: 100%; justify-content: flex-start; align-items: center; padding: 20px; width: 100%; max-width: 450px; background: white; overflow-y: auto; }
+        .screen { display: flex; flex-direction: column; height: 100vh; justify-content: flex-start; align-items: center; padding: 20px; width: 100%; max-width: 450px; background: white; overflow-y: auto; position: relative; z-index: 1; }
         .screen h2 { margin-top: 20px; margin-bottom: 20px; color: #007bff; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; outline: none; }
-        button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; flex-shrink: 0; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; outline: none; position: relative; z-index: 5; }
+        button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; flex-shrink: 0; position: relative; z-index: 10; }
         button:hover { background: #0056b3; }
         .secondary-btn { background: #6c757d; }
         .secondary-btn:hover { background: #5a6268; }
@@ -31,25 +30,47 @@
         /* Bilgi Kutusu */
         .my-code-box { background: #e2e3e5; padding: 10px; border-radius: 8px; font-weight: bold; margin-bottom: 15px; color: #383d41; text-align: center; width: 100%; }
 
-        /* İki Sekmeli Alan (Arkadaşlar ve Gruplar için) */
-        .panel-sections { width: 100%; flex: 1; display: flex; flex-direction: column; margin-top: 15px; min-height: 300px; }
+        /* İki Sekmeli Alan */
+        .panel-sections { width: 100%; display: flex; flex-direction: column; margin-top: 15px; }
         .section-block { width: 100%; border-top: 1px solid #eee; padding-top: 10px; margin-bottom: 15px; }
         .section-block h3 { font-size: 15px; color: #555; margin-bottom: 8px; text-align: left; width: 100%; }
         .item-list { width: 100%; display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto; }
 
         /* Kart Tasarımları */
-        .item-card { display: flex; align-items: center; gap: 12px; padding: 10px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef; cursor: pointer; transition: 0.2s; text-align: left; width: 100%; }
+        .item-card { display: flex; align-items: center; gap: 12px; padding: 10px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef; cursor: pointer; transition: 0.2s; text-align: left; width: 100%; position: relative; z-index: 5; }
         .item-card:hover { background: #e9ecef; }
-        .item-card img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #fff; }
-        .item-card .item-info { display: flex; flex-direction: column; }
+        .item-card img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #fff; pointer-events: none; }
+        .item-card .item-info { display: flex; flex-direction: column; pointer-events: none; }
         .item-card .item-name { font-weight: bold; color: #333; font-size: 15px; }
         .item-card .item-status { font-size: 12px; color: #6c757d; }
         .item-card .group-status { color: #17a2b8; font-weight: bold; }
+        
+        .item-card .status-online { color: #28a745; font-weight: bold; }
+        .item-card .status-offline { color: #dc3545; font-weight: bold; }
 
         /* Sohbet Üst Başlık */
-        .header { background: #007bff; color: white; padding: 15px; display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: bold; position: relative; }
+        .header { background: #007bff; color: white; padding: 15px; display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: bold; position: relative; z-index: 20; }
         .header .back-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; margin-top: 0; width: auto; padding: 0; }
-        .header-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #fff; }
+        .header-avatar { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; background: #fff; }
+        .header-buttons { display: flex; gap: 4px; position: absolute; right: 5px; z-index: 30; }
+        .game-toggle-btn { background: #ffc107; color: #212529; font-size: 11px; padding: 5px 8px; border-radius: 15px; width: auto; margin: 0; }
+        .emoji-toggle-btn { background: #17a2b8; color: white; font-size: 11px; padding: 5px 8px; border-radius: 15px; width: auto; margin: 0; }
+        .sticker-toggle-btn { background: #e67e22; color: white; font-size: 11px; padding: 5px 8px; border-radius: 15px; width: auto; margin: 0; }
+
+        /* OYUN VE EMOJİ ALANLARI */
+        .drawing-game-area { background: #f8f9fa; border-bottom: 2px solid #ddd; padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; z-index: 15; }
+        .game-info-text { font-size: 14px; font-weight: bold; color: #333; text-align: center; }
+        canvas { background: white; border: 2px solid #ccc; border-radius: 8px; cursor: crosshair; box-shadow: inset 0 0 5px rgba(0,0,0,0.1); width: 100%; max-width: 400px; height: 150px; }
+        .canvas-controls { display: flex; gap: 10px; width: 100%; max-width: 400px; }
+        .canvas-controls button { margin: 0; padding: 6px; font-size: 12px; }
+
+        .emoji-test-area { background: #e9ecef; border-bottom: 2px solid #ccc; padding: 12px; display: flex; flex-direction: column; gap: 8px; position: relative; z-index: 15; width: 100%; }
+
+        /* ÖZEL EMOJİ/STICKER PANELİ */
+        .special-emoji-area { background: #fff; border-bottom: 2px solid #ddd; padding: 10px; position: relative; z-index: 15; width: 100%; }
+        .sticker-grid { display: flex; gap: 12px; overflow-x: auto; padding: 5px 0; scrollbar-width: thin; }
+        .sticker-item { width: 55px; height: 55px; cursor: pointer; transition: 0.2s; border-radius: 8px; object-fit: cover; background: #f8f9fa; border: 1px solid #eee; padding: 4px; }
+        .sticker-item:hover { transform: scale(1.15); background: #e9ecef; }
 
         /* Mesaj Alanı ve Balonlar */
         .messages-area { flex: 1; padding: 15px; overflow-y: auto; background: #efeae2; display: flex; flex-direction: column; gap: 12px; }
@@ -59,16 +80,18 @@
         .msg-wrapper.gelen { align-self: flex-start; }
 
         .msg-avatar { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-
         .msg-box-container { display: flex; flex-direction: column; }
         .msg-sender-name { font-size: 12px; font-weight: bold; color: #e67e22; margin-left: 4px; margin-bottom: 2px; }
 
         .msg { padding: 10px 14px; border-radius: 15px; font-size: 15px; word-wrap: break-word; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .msg-wrapper.giden .msg { background: #d9fdd3; border-bottom-right-radius: 0; }
         .msg-wrapper.gelen .msg { background: white; border-bottom-left-radius: 0; }
+        
+        /* Büyük Çıkartma Görünümü */
+        .msg-sticker { max-width: 100px; max-height: 100px; border-radius: 10px; display: block; margin-top: 2px; }
 
         /* Alt Mesaj Yazma Alanı */
-        .input-area { padding: 10px; background: #f0f2f5; display: flex; gap: 8px; }
+        .input-area { padding: 10px; background: #f0f2f5; display: flex; gap: 8px; z-index: 10; }
         .input-area input { margin: 0; flex: 1; }
         .input-area button { width: auto; padding: 0 20px; margin: 0; }
 
@@ -120,13 +143,10 @@
         </div>
 
         <div class="panel-sections">
-            <!-- Arkadaşlar Listesi -->
             <div class="section-block">
                 <h3>Konuştuğum Kişiler (Sohbetlerim)</h3>
                 <div class="item-list" id="friends-list-container"></div>
             </div>
-
-            <!-- Gruplar Listesi -->
             <div class="section-block">
                 <h3>Katıldığım Gruplar</h3>
                 <div class="item-list" id="groups-list-container"></div>
@@ -141,10 +161,41 @@
             <button class="back-btn" onclick="backToSearch()">⬅</button>
             <img id="chat-partner-avatar" class="header-avatar" src="" alt="">
             <span id="chat-partner-name">Sohbet</span>
+            <div class="header-buttons">
+                <button class="sticker-toggle-btn" onclick="toggleStickerPanel()">🎭 Emojiler</button>
+                <button class="emoji-toggle-btn" onclick="toggleEmojiGame()">🔮 Test</button>
+                <button class="game-toggle-btn" onclick="toggleDrawingGame()">🎨 Resim</button>
+            </div>
         </div>
+
+        <!-- ÖZEL EMOJİ / ÇIKARTMA SEÇME ALANI -->
+        <div id="special-emoji-panel" class="special-emoji-area hidden">
+            <span style="font-size: 12px; font-weight: bold; color: #666; display: block; margin-bottom: 5px;">Özel Karakter Çıkartması Gönder:</span>
+            <div class="sticker-grid" id="sticker-grid-container"></div>
+        </div>
+
+        <!-- EMOJİ KİŞİLİK TAHMİN ALANI -->
+        <div id="emoji-game-panel" class="emoji-test-area hidden">
+            <span style="font-size: 13px; font-weight: bold; color: #333;">🔮 Son 20 Emojini Yapıştır:</span>
+            <div style="display: flex; gap: 6px;">
+                <input type="text" id="emoji-test-input" placeholder="Örn: 😂😎🔥🚀💻✨..." style="margin: 0; padding: 8px;">
+                <button class="group-btn" onclick="analyzeMyEmojis()" style="margin: 0; width: auto; padding: 0 15px; font-size: 13px;">Analiz Et</button>
+            </div>
+        </div>
+
+        <!-- ÇİZ BAKALIM RESİM OYUNU ALANI -->
+        <div id="drawing-game-panel" class="drawing-game-area hidden">
+            <div id="game-info-text" class="game-info-text">Oyun başlatılmadı.</div>
+            <canvas id="paint-canvas" width="400" height="150"></canvas>
+            <div class="canvas-controls" id="painter-controls">
+                <button class="group-btn" onclick="startNewGameRound()">Yeni Kelime İste</button>
+                <button class="logout-btn" onclick="clearCanvasDB()">Ekranı Temizle</button>
+            </div>
+        </div>
+
         <div class="messages-area" id="messages-container"></div>
         <div class="input-area">
-            <input type="text" id="message-input" placeholder="Mesaj yazın..." onkeypress="handleKeyPress(event)">
+            <input type="text" id="message-input" placeholder="Mesaj veya TAHMİN yazın..." onkeypress="handleKeyPress(event)">
             <button onclick="sendMessage()">Gönder</button>
         </div>
     </div>
@@ -160,11 +211,14 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
+        // Karakter Dosyaları ve Özel Çıkartma Listesi (Blinky Kaldırıldı - 5 Karakter)
         const avatarFiles = ["mini.flip.jpg", "mini.squeak.jpg", "mini.sugar.jpg", "mini.dot.jpg", "mini.gus.jpg"];
-        const groupAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23007bff'><path d='M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z'/></svg>";
-        
-        let selectedAvatar = avatarFiles[0];
+        const specialStickers = ["mini.flip.jpg", "mini.squeak.jpg", "mini.sugar.jpg", "mini.dot.jpg", "mini.gus.jpg"];
 
+        const groupAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23007bff'><path d='M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z'/></svg>";
+        const wordPool = ["elma", "araba", "ev", "güneş", "kedi", "köpek", "balık", "ağaç", "uçak", "top", "kitap", "muz", "çilek", "kalp", "bulut", "gözlük", "telefon", "kapı"];
+
+        let selectedAvatar = avatarFiles[0];
         let myUsername = localStorage.getItem("saved_username") || "";
         let myFriendCode = localStorage.getItem("saved_code") || "";
 
@@ -172,12 +226,26 @@
         let chatRoomId = "";
         let isGroupChat = false;
         let activeGroupCode = "";
+        let msgListenerRef = null;
+
+        let gameObjectRoomId = "";
+        let currentGameWord = "";
+        let currentPainter = "";
+        let isDrawing = false;
+        let canvas, ctx;
+        let canvasListenerRef = null, statusListenerRef = null;
 
         window.onload = function() {
+            canvas = document.getElementById("paint-canvas");
+            ctx = canvas.getContext("2d");
+            setupCanvasDrawing();
+            loadStickerInterface();
+
             if (myUsername && myFriendCode) {
                 database.ref("users/" + myUsername).once("value", (snapshot) => {
                     if (snapshot.exists()) {
                         selectedAvatar = snapshot.val().avatar;
+                        setUserOnlineStatus();
                         showSearchScreen();
                     } else {
                         localStorage.clear();
@@ -189,6 +257,14 @@
             }
         };
 
+        function setUserOnlineStatus() {
+            if(!myUsername) return;
+            const myStatusRef = database.ref("status/" + myUsername);
+            myStatusRef.set("aktif");
+            myStatusRef.onDisconnect().set("pasif");
+        }
+
+        // Kayıt Ekranındaki Profil Resmi Seçimi
         const regPicker = document.getElementById("register-avatar-picker");
         avatarFiles.forEach((file, idx) => {
             const img = document.createElement("img");
@@ -202,17 +278,24 @@
             regPicker.appendChild(img);
         });
 
-        function generate7DigitCode() {
-            return Math.floor(1000000 + Math.random() * 9000000).toString();
-        }
-
-        function generate6DigitGroupCode() {
-            return Math.floor(100000 + Math.random() * 900000).toString();
+        // Çıkartma Panelini Doldurma
+        function loadStickerInterface() {
+            const grid = document.getElementById("sticker-grid-container");
+            grid.innerHTML = ""; // Önceki listeyi temizle
+            specialStickers.forEach(src => {
+                const img = document.createElement("img");
+                img.src = src;
+                img.className = "sticker-item";
+                img.onclick = () => sendSpecialSticker(src);
+                grid.appendChild(img);
+            });
         }
 
         function showScreen(screenId) {
             document.querySelectorAll(".screen, .chat-container").forEach(el => el.classList.add("hidden"));
-            document.getElementById(screenId).classList.remove("hidden");
+            const activeScreen = document.getElementById(screenId);
+            activeScreen.classList.remove("hidden");
+            activeScreen.scrollTop = 0;
         }
 
         function register() {
@@ -220,30 +303,14 @@
             const pass = document.getElementById("reg-password").value.trim();
 
             if (!user || !pass) return alert("Lütfen kullanıcı adı ve şifre belirleyin!");
-            if (pass.length < 4) return alert("Şifre en az 4 haneli olmalıdır!");
-
             database.ref("users/" + user).once("value", (snapshot) => {
-                if (snapshot.exists()) {
-                    alert("Bu kullanıcı adı zaten alınmış!");
-                } else {
-                    const generatedCode = generate7DigitCode();
-                    const userData = {
-                        username: user,
-                        password: pass,
-                        avatar: selectedAvatar,
-                        friendCode: generatedCode
-                    };
-
-                    database.ref("users/" + user).set(userData);
+                if (snapshot.exists()) { alert("Bu kullanıcı adı zaten alınmış!"); } else {
+                    const generatedCode = Math.floor(1000000 + Math.random() * 9000000).toString();
+                    database.ref("users/" + user).set({username: user, password: pass, avatar: selectedAvatar, friendCode: generatedCode});
                     database.ref("codes/" + generatedCode).set(user);
-
-                    myUsername = user;
-                    myFriendCode = generatedCode;
-
-                    localStorage.setItem("saved_username", myUsername);
-                    localStorage.setItem("saved_code", myFriendCode);
-
-                    showSearchScreen();
+                    myUsername = user; myFriendCode = generatedCode;
+                    localStorage.setItem("saved_username", myUsername); localStorage.setItem("saved_code", myFriendCode);
+                    setUserOnlineStatus(); showSearchScreen();
                 }
             });
         }
@@ -251,27 +318,13 @@
         function login() {
             const user = document.getElementById("login-username").value.trim().toLowerCase();
             const pass = document.getElementById("login-password").value.trim();
-
             if (!user || !pass) return alert("Kullanıcı adı ve şifrenizi girin!");
-
             database.ref("users/" + user).once("value", (snapshot) => {
-                if (snapshot.exists()) {
-                    const dbData = snapshot.val();
-                    if (dbData.password === pass) {
-                        myUsername = user;
-                        myFriendCode = dbData.friendCode;
-                        selectedAvatar = dbData.avatar;
-
-                        localStorage.setItem("saved_username", myUsername);
-                        localStorage.setItem("saved_code", myFriendCode);
-
-                        showSearchScreen();
-                    } else {
-                        alert("Hatalı şifre girdiniz!");
-                    }
-                } else {
-                    alert("Kullanıcı bulunamadı!");
-                }
+                if (snapshot.exists() && snapshot.val().password === pass) {
+                    myUsername = user; myFriendCode = snapshot.val().friendCode; selectedAvatar = snapshot.val().avatar;
+                    localStorage.setItem("saved_username", myUsername); localStorage.setItem("saved_code", myFriendCode);
+                    setUserOnlineStatus(); showSearchScreen();
+                } else { alert("Hatalı giriş bilgileri!"); }
             });
         }
 
@@ -279,278 +332,335 @@
             showScreen("search-screen");
             document.getElementById("my-friend-code-display").innerText = "Arkadaşlık Kodunuz: " + myFriendCode;
             document.getElementById("welcome-text").innerText = `Hoş geldin, ${myUsername}!`;
-            loadFriendsList();
-            loadGroupsList();
+            loadFriendsList(); loadGroupsList();
         }
 
         function loadFriendsList() {
             const listContainer = document.getElementById("friends-list-container");
-            listContainer.innerHTML = "";
-
             database.ref("user_friends/" + myUsername).on("value", (snapshot) => {
                 listContainer.innerHTML = "";
                 if (snapshot.exists()) {
-                    const friends = snapshot.val();
-                    Object.keys(friends).forEach(fName => {
+                    Object.keys(snapshot.val()).forEach(fName => {
                         database.ref("users/" + fName).once("value", (uSnap) => {
                             if (uSnap.exists()) {
-                                const fData = uSnap.val();
                                 const card = document.createElement("div");
-                                card.className = "friend-card item-card";
-                                card.onclick = () => openDirectChat(fName, fData.avatar);
-                                card.innerHTML = `
-                                    <img src="${fData.avatar}" alt="">
-                                    <div class="item-info">
-                                        <span class="item-name">${fName}</span>
-                                        <span class="item-status">Sohbet etmek için tıkla</span>
-                                    </div>
-                                `;
+                                card.className = "item-card";
+                                card.onclick = () => openDirectChat(fName, uSnap.val().avatar);
+                                card.innerHTML = `<img src="${uSnap.val().avatar}"><div class="item-info"><span class="item-name">${fName}</span><span class="item-status" id="status-text-${fName}">Yükleniyor...</span></div>`;
                                 listContainer.appendChild(card);
+                                database.ref("status/" + fName).on("value", (statusSnap) => {
+                                    const textEl = document.getElementById(`status-text-${fName}`);
+                                    if (textEl) { textEl.innerHTML = statusSnap.val() === "aktif" ? `<span class="status-online">● aktif</span>` : `<span class="status-offline">pasif</span>`; }
+                                });
                             }
                         });
                     });
-                } else {
-                    listContainer.innerHTML = `<p style="color:#888; font-size:13px; text-align:center; margin-top:5px;">Sohbet yok. Kod girerek arkadaş ekle!</p>`;
-                }
+                } else { listContainer.innerHTML = `<p style="color:#888; font-size:13px; text-align:center;">Sohbet yok.</p>`; }
             });
         }
 
         function loadGroupsList() {
             const groupContainer = document.getElementById("groups-list-container");
-            groupContainer.innerHTML = "";
-
             database.ref("user_groups/" + myUsername).on("value", (snapshot) => {
                 groupContainer.innerHTML = "";
                 if (snapshot.exists()) {
-                    const groups = snapshot.val();
-                    Object.keys(groups).forEach(gCode => {
+                    Object.keys(snapshot.val()).forEach(gCode => {
                         database.ref("groups/" + gCode).once("value", (gSnap) => {
                             if (gSnap.exists()) {
-                                const gData = gSnap.val();
-                                const memberCount = gData.members ? Object.keys(gData.members).length : 0;
                                 const card = document.createElement("div");
                                 card.className = "item-card";
-                                card.onclick = () => openGroupChat(gCode, gData.name);
-                                card.innerHTML = `
-                                    <img src="${groupAvatar}" alt="">
-                                    <div class="item-info">
-                                        <span class="item-name">${gData.name}</span>
-                                        <span class="item-status group-status">Kod: ${gCode} (${memberCount}/50 Üye)</span>
-                                    </div>
-                                `;
+                                card.onclick = () => openGroupChat(gCode, gSnap.val().name);
+                                card.innerHTML = `<img src="${groupAvatar}"><div class="item-info"><span class="item-name">${gSnap.val().name}</span><span class="item-status group-status">Kod: ${gCode}</span></div>`;
                                 groupContainer.appendChild(card);
                             }
                         });
                     });
-                } else {
-                    groupContainer.innerHTML = `<p style="color:#888; font-size:13px; text-align:center; margin-top:5px;">Henüz bir gruba üye değilsiniz.</p>`;
                 }
             });
         }
 
         function startChatByCode() {
             const codeInput = document.getElementById("friend-code-input").value.trim();
-            if (codeInput.length !== 7) return alert("Lütfen 7 haneli geçerli bir kod girin!");
-            if (codeInput === myFriendCode) return alert("Kendi kodunuzu giremezsiniz!");
-
+            if (codeInput.length !== 7 || codeInput === myFriendCode) return alert("Geçersiz kod!");
             database.ref("codes/" + codeInput).once("value", (snapshot) => {
                 if (snapshot.exists()) {
                     friendUsername = snapshot.val();
                     database.ref("user_friends/" + myUsername + "/" + friendUsername).set(true);
                     database.ref("user_friends/" + friendUsername + "/" + myUsername).set(true);
-
-                    database.ref("users/" + friendUsername).once("value", (userSnap) => {
-                        let fAvatar = userSnap.exists() ? userSnap.val().avatar : avatarFiles[0];
-                        openDirectChat(friendUsername, fAvatar);
-                        openDirectChat(friendUsername, fAvatar);
-                    });
-                } else {
-                    alert("Bu koda ait bir kullanıcı bulunamadı!");
-                }
+                    database.ref("users/" + friendUsername).once("value", (uSnap) => openDirectChat(friendUsername, uSnap.val().avatar));
+                } else { alert("Kullanıcı bulunamadı!"); }
             });
         }
 
-        // GRUP SOHBETİ BAŞLATMA (Maksimum 50 Üye Limitli Altyapı)
         function createNewGroup() {
-            const groupName = prompt("Kurmak istediğiniz grubun adını girin:");
-            if (!groupName || groupName.trim() === "") return;
-
-            const gCode = generate6DigitGroupCode();
-            
-            // Firebase üzerinde grubu oluştur
-            database.ref("groups/" + gCode).set({
-                name: groupName.trim(),
-                creator: myUsername,
-                code: gCode
-            });
-
-            // Kuran kişiyi üye olarak ekle
+            const groupName = prompt("Grup adı girin:");
+            if (!groupName) return;
+            const gCode = Math.floor(100000 + Math.random() * 900000).toString();
+            database.ref("groups/" + gCode).set({name: groupName.trim(), creator: myUsername, code: gCode});
             database.ref("groups/" + gCode + "/members/" + myUsername).set(true);
             database.ref("user_groups/" + myUsername + "/" + gCode).set(true);
-
-            alert(`"${groupName}" grubu kuruldu!\nGrup Kodu: ${gCode}\nArkadaşlarının katılması için bu kodu paylaşabilirsin.`);
             openGroupChat(gCode, groupName.trim());
         }
 
-        // MEVCUT BİR GRUBA KATILMA (50 Kişi Sınır Kontrolü İle)
         function joinGroup() {
             const gCode = document.getElementById("group-code-input").value.trim();
-            if (gCode.length !== 6) return alert("Lütfen 6 haneli geçerli bir grup kodu girin!");
-
             database.ref("groups/" + gCode).once("value", (snapshot) => {
                 if (snapshot.exists()) {
-                    const gData = snapshot.val();
-                    const currentMembers = gData.members ? Object.keys(gData.members) : [];
-
-                    // Kullanıcı zaten gruptaysa direkt odayı aç
-                    if (currentMembers.includes(myUsername)) {
-                        return openGroupChat(gCode, gData.name);
-                    }
-
-                    // 50 Üye Sınırı Kontrolü
-                    if (currentMembers.length >= 50) {
-                        return alert("Bu grup maalesef tamamen dolu! (Maksimum 50 üye)");
-                    }
-
-                    // Veritabanına kaydet
                     database.ref("groups/" + gCode + "/members/" + myUsername).set(true);
                     database.ref("user_groups/" + myUsername + "/" + gCode).set(true);
-
-                    alert(`"${gData.name}" grubuna başarıyla katıldınız!`);
-                    openGroupChat(gCode, gData.name);
-                } else {
-                    alert("Grup bulunamadı! Lütfen kodu kontrol edin.");
-                }
+                    openGroupChat(gCode, snapshot.val().name);
+                } else { alert("Grup bulunamadı!"); }
             });
         }
 
-        // BİREBİR (ÖZEL) SOHBET ODASINI AÇMA
         function openDirectChat(fName, fAvatar) {
-            isGroupChat = false;
-            friendUsername = fName;
-            
-            // İki kullanıcı arasında benzersiz ve kalıcı bir oda ID'si üretme (Alfabetik sıralama kontrolü)
+            isGroupChat = false; friendUsername = fName;
             chatRoomId = myUsername < friendUsername ? `${myUsername}_${friendUsername}` : `${friendUsername}_${myUsername}`;
-
-            document.getElementById("chat-partner-name").innerText = fName;
-            document.getElementById("chat-partner-avatar").src = fAvatar;
-
-            showScreen("chat-screen");
-            listenMessages("messages/" + chatRoomId);
+            gameObjectRoomId = "room_" + chatRoomId;
+            initChatRoom(fName, fAvatar, "messages/" + chatRoomId);
         }
 
-        // GRUP SOHBET ODASINI AÇMA
         function openGroupChat(gCode, gName) {
-            isGroupChat = true;
-            activeGroupCode = gCode;
-
-            document.getElementById("chat-partner-name").innerText = gName;
-            document.getElementById("chat-partner-avatar").src = groupAvatar;
-
-            showScreen("chat-screen");
-            listenMessages("group_messages/" + gCode);
+            isGroupChat = true; activeGroupCode = gCode;
+            gameObjectRoomId = "group_" + gCode;
+            initChatRoom(gName, groupAvatar, "group_messages/" + gCode);
         }
 
-        // MESAJLARI ANLIK TAKİP ETME (LISTEN)
-        let msgListenerRef = null;
+        function initChatRoom(title, avatar, dbPath) {
+            document.getElementById("chat-partner-name").innerText = title;
+            document.getElementById("chat-partner-avatar").src = avatar;
+            document.getElementById("drawing-game-panel").classList.add("hidden");
+            document.getElementById("emoji-game-panel").classList.add("hidden");
+            document.getElementById("special-emoji-panel").classList.add("hidden");
+            showScreen("chat-screen");
+            listenMessages(dbPath);
+            listenGameStatus();
+        }
+
         function listenMessages(dbPath) {
             const container = document.getElementById("messages-container");
-            container.innerHTML = ""; // Eski odaya ait mesajları temizle
-
-            // Eğer arka planda açık kalmış eski bir dinleyici varsa bağlantısını kes (Performans için kritik)
-            if (msgListenerRef) {
-                msgListenerRef.off();
-            }
-
+            container.innerHTML = "";
+            if (msgListenerRef) msgListenerRef.off();
             msgListenerRef = database.ref(dbPath);
-            msgListenerRef.on("child_added", (snapshot) => {
-                if (snapshot.exists()) {
-                    const msgData = snapshot.val();
-                    renderMessage(msgData);
-                }
-            });
+            msgListenerRef.on("child_added", (snapshot) => { if (snapshot.exists()) renderMessage(snapshot.val()); });
         }
 
-        // MESAJ BALONCUKLARINI EKRANA ÇİZME
         function renderMessage(data) {
             const container = document.getElementById("messages-container");
             const isMe = data.sender === myUsername;
-
             const wrapper = document.createElement("div");
             wrapper.className = `msg-wrapper ${isMe ? 'giden' : 'gelen'}`;
-
-            // Profil Resmi
             const img = document.createElement("img");
-            img.className = "msg-avatar";
-            img.src = data.avatar || avatarFiles[0];
-
+            img.className = "msg-avatar"; img.src = data.avatar || avatarFiles[0];
             const boxContainer = document.createElement("div");
-            boxContainer.className = "msg-box-container";
-
-            // Eğer grup sohbetiyse ve mesajı atan başkasıysa baloncuk üstünde ismini göster
+            boxContainer.className = "box-container";
             if (isGroupChat && !isMe) {
-                const nameTag = document.createElement("span");
-                nameTag.className = "msg-sender-name";
-                nameTag.innerText = data.sender;
-                boxContainer.appendChild(nameTag);
+                const nt = document.createElement("span"); nt.className = "msg-sender-name"; nt.innerText = data.sender;
+                boxContainer.appendChild(nt);
             }
-
-            const msgBox = document.createElement("div");
-            msgBox.className = "msg";
-            msgBox.innerText = data.message;
-
-            boxContainer.appendChild(msgBox);
-            wrapper.appendChild(img);
-            wrapper.appendChild(boxContainer);
-            container.appendChild(wrapper);
-
-            // Her yeni mesaj eklendiğinde ekranı otomatik en alta kaydır
-            container.scrollTop = container.scrollHeight;
+            
+            const mb = document.createElement("div"); mb.className = "msg";
+            
+            if (data.type === "sticker") {
+                mb.innerHTML = `<img src="${data.message}" class="msg-sticker">`;
+            } else {
+                mb.innerText = data.message;
+            }
+            
+            boxContainer.appendChild(mb); wrapper.appendChild(img); wrapper.appendChild(boxContainer);
+            container.appendChild(wrapper); container.scrollTop = container.scrollHeight;
         }
 
-        // MESAJ GÖNDERME İŞLEMİ
         function sendMessage() {
             const input = document.getElementById("message-input");
             const text = input.value.trim();
             if (!text) return;
 
-            const msgPayload = {
-                sender: myUsername,
-                message: text,
-                avatar: selectedAvatar,
-                timestamp: Date.now()
+            if (currentPainter && currentPainter !== myUsername && currentGameWord && text.toLowerCase() === currentGameWord.toLowerCase()) {
+                sendSystemMessage(`🎉 ${myUsername} DOĞRU TAHMİN ETTİ! Kelime: ${currentGameWord} idi!`);
+                resetGameRound();
+                input.value = ""; return;
+            }
+
+            const payload = { sender: myUsername, message: text, avatar: selectedAvatar, type: "text", timestamp: Date.now() };
+            if (isGroupChat) { database.ref("group_messages/" + activeGroupCode).push(payload); } 
+            else { database.ref("messages/" + chatRoomId).push(payload); }
+            input.value = ""; input.focus();
+        }
+
+        function sendSpecialSticker(stickerPath) {
+            const payload = { sender: myUsername, message: stickerPath, avatar: selectedAvatar, type: "sticker", timestamp: Date.now() };
+            if (isGroupChat) { database.ref("group_messages/" + activeGroupCode).push(payload); } 
+            else { database.ref("messages/" + chatRoomId).push(payload); }
+            document.getElementById("special-emoji-panel").classList.add("hidden");
+        }
+
+        function sendSystemMessage(text) {
+            const payload = { sender: "Sistem 🤖", message: text, avatar: groupAvatar, type: "text", timestamp: Date.now() };
+            if (isGroupChat) { database.ref("group_messages/" + activeGroupCode).push(payload); }
+            else { database.ref("messages/" + chatRoomId).push(payload); }
+        }
+
+        function handleKeyPress(event) { if (event.key === "Enter") sendMessage(); }
+
+        // Mod Seçimleri ve Panel Geçişleri
+        function toggleStickerPanel() {
+            document.getElementById("drawing-game-panel").classList.add("hidden");
+            document.getElementById("emoji-game-panel").classList.add("hidden");
+            const panel = document.getElementById("special-emoji-panel");
+            panel.classList.toggle("hidden");
+        }
+
+        function toggleEmojiGame() {
+            document.getElementById("drawing-game-panel").classList.add("hidden");
+            document.getElementById("special-emoji-panel").classList.add("hidden");
+            const panel = document.getElementById("emoji-game-panel");
+            panel.classList.toggle("hidden");
+        }
+
+        function toggleDrawingGame() {
+            document.getElementById("emoji-game-panel").classList.add("hidden");
+            document.getElementById("special-emoji-panel").classList.add("hidden");
+            const panel = document.getElementById("drawing-game-panel");
+            panel.classList.toggle("hidden");
+            if (!panel.classList.contains("hidden")) listenCanvasDrawing();
+        }
+
+        // Emoji Kişilik Tahmin Motoru
+        function analyzeMyEmojis() {
+            const input = document.getElementById("emoji-test-input");
+            const emojis = input.value.trim();
+            if (!emojis) return alert("Lütfen emojilerini buraya yapıştır!");
+
+            let gamerType = "Gizemli Oyuncu 🎭";
+            let description = "Duygularını pek belli etmeyen, stratejisini gizli tutan kapalı bir kutu!";
+
+            if (emojis.includes("💻") || emojis.includes("🖥️") || emojis.includes("🚀") || emojis.includes("✨") || emojis.includes("🔥")) {
+                gamerType = "Kod Dehası & Geleceğin Yapımcısı 🚀💻";
+                description = "Sıradan bir oyuncu değil, arkadaki kod mantığını çözmeye çalışan üretken bir dahi! Projeleri ateşe veriyor.";
+            } else if (emojis.includes("😂") || emojis.includes("🤣") || emojis.includes("🤡") || emojis.includes("😜")) {
+                gamerType = "Eğlenceli Troll / Neşeli Oyuncu 🤣";
+                description = "Kazanmaktan çok odadaki herkesi güldürmeyi ve eğlenmeyi seven, takımın neşe kaynağı!";
+            } else if (emojis.includes("😎") || emojis.includes("👑") || emojis.includes("🏆") || emojis.includes("🎮")) {
+                gamerType = "Efsanevi Pro Gamer 👑😎";
+                description = "Tarzından ödün vermeyen, rekabetçi, girdiği her maçı kazanmak için oynayan tam bir profesyonel!";
+            } else if (emojis.includes("🐱") || emojis.includes("🐶") || emojis.includes("🐹") || emojis.includes("🥺") || emojis.includes("💖")) {
+                gamerType = "Sevimli Dost Canlısı 💖🐱";
+                description = "Arkadaşlarıyla oynamayı çok seven, yardımsever, tatlı ve takım çalışmasına aşırı önem veren biri!";
+            } else if (emojis.includes("😡") || emojis.includes("😤") || emojis.includes("🙄") || emojis.includes("⚔️")) {
+                gamerType = "Hırslı Savaşçı ⚔️😤";
+                description = "Kaybetmeye asla tahammülü olmayan, son saniyeye kadar savaşan, enerjisi tavan yapmış hırslı bir oyuncu!";
+            }
+
+            const formattedReport = `🔮 EMOJİ KİŞİLİK ANALİZİ 🔮\n👤 Oyuncu: ${myUsername}\n📊 Son Emojileri: ${emojis}\n\n🎯 Oyuncu Tipi: ${gamerType}\n📝 Analiz: ${description}`;
+            sendSystemMessage(formattedReport);
+            
+            input.value = "";
+            document.getElementById("emoji-game-panel").classList.add("hidden");
+        }
+
+        // Resim Çizme & Tahmin Etme Motoru
+        function setupCanvasDrawing() {
+            const getPos = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return { x: (clientX - rect.left) * (canvas.width / rect.width), y: (clientY - rect.top) * (canvas.height / rect.height) };
             };
+            const start = (e) => {
+                if (currentPainter !== myUsername) return;
+                isDrawing = true;
+                const pos = getPos(e);
+                sendDrawPoint(pos.x, pos.y, false);
+            };
+            const move = (e) => {
+                if (!isDrawing || currentPainter !== myUsername) return;
+                const pos = getPos(e);
+                sendDrawPoint(pos.x, pos.y, true);
+            };
+            const stop = () => isDrawing = false;
 
-            if (isGroupChat) {
-                database.ref("group_messages/" + activeGroupCode).push(msgPayload);
-            } else {
-                database.ref("messages/" + chatRoomId).push(msgPayload);
-            }
-
-            input.value = ""; // Giriş kutusunu temizle
-            input.focus();
+            canvas.addEventListener("mousedown", start); canvas.addEventListener("mousemove", move); window.addEventListener("mouseup", stop);
+            canvas.addEventListener("touchstart", start); canvas.addEventListener("touchmove", move); window.addEventListener("touchend", stop);
         }
 
-        // ENTER TUŞU İLE MESAJ GÖNDERME DESTEĞİ
-        function handleKeyPress(event) {
-            if (event.key === "Enter") {
-                sendMessage();
-            }
+        function sendDrawPoint(x, y, dragging) {
+            database.ref(`canvas_games/${gameObjectRoomId}/lines`).push({ x: Math.round(x), y: Math.round(y), drag: dragging });
         }
 
-        // GERİ DÖNÜŞ VE GÜVENLİ ÇIKIŞ FONKSİYONLARI
+        function listenCanvasDrawing() {
+            if (canvasListenerRef) canvasListenerRef.off();
+            canvasListenerRef = database.ref(`canvas_games/${gameObjectRoomId}/lines`);
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let lastX = 0, lastY = 0;
+
+            canvasListenerRef.on("child_added", (snapshot) => {
+                if (!snapshot.exists()) return;
+                const pt = snapshot.val();
+                ctx.beginPath();
+                ctx.strokeStyle = "#333"; ctx.lineWidth = 3; ctx.lineCap = "round"; ctx.lineJoin = "round";
+                if (pt.drag && lastX && lastY) { ctx.moveTo(lastX, lastY); } else { ctx.moveTo(pt.x - 1, pt.y); }
+                ctx.lineTo(pt.x, pt.y); ctx.stroke();
+                lastX = pt.x; lastY = pt.y;
+            });
+        }
+
+        function listenGameStatus() {
+            if (statusListenerRef) statusListenerRef.off();
+            statusListenerRef = database.ref(`canvas_games/${gameObjectRoomId}/status`);
+            statusListenerRef.on("value", (snapshot) => {
+                const infoText = document.getElementById("game-info-text");
+                const ctrl = document.getElementById("painter-controls");
+                
+                if (!snapshot.exists()) {
+                    infoText.innerHTML = "🎨 Kimse çizmiyor. <span style='color:blue; cursor:pointer;' onclick='startNewGameRound()'>Ressam Ol ve Başlat!</span>";
+                    ctrl.classList.add("hidden");
+                    currentPainter = ""; currentGameWord = "";
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    return;
+                }
+
+                const game = snapshot.val();
+                currentPainter = game.painter;
+                currentGameWord = game.word;
+
+                if (currentPainter === myUsername) {
+                    infoText.innerHTML = `✏️ <strong>RESSAM SENSİN!</strong> Çizmen gereken kelime: <span style='color:green; font-size:16px;'>${currentGameWord.toUpperCase()}</span>`;
+                    ctrl.classList.remove("hidden");
+                } else {
+                    infoText.innerHTML = `👀 <strong>${currentPainter}</strong> çiziyor! Sohbetten ne olduğunu tahmin et!`;
+                    ctrl.classList.add("hidden");
+                }
+            });
+        }
+
+        function startNewGameRound() {
+            const randomWord = wordPool[Math.floor(Math.random() * wordPool.length)];
+            database.ref(`canvas_games/${gameObjectRoomId}/lines`).remove();
+            database.ref(`canvas_games/${gameObjectRoomId}/status`).set({ painter: myUsername, word: randomWord });
+            sendSystemMessage(`🎮 Yeni resim oyunu başladı! Ressam: ${myUsername}. Hadi bilmeye çalışın!`);
+        }
+
+        function resetGameRound() { database.ref(`canvas_games/${gameObjectRoomId}`).remove(); }
+        
+        // EKRANI TEMİZLE FONKSİYONU (Hem veri tabanını sıfırlar hem kendi ekranını anında siler)
+        function clearCanvasDB() { 
+            database.ref(`canvas_games/${gameObjectRoomId}/lines`).remove(); 
+            ctx.clearRect(0, 0, canvas.width, canvas.height); 
+        }
+
         function backToSearch() {
-            if (msgListenerRef) {
-                msgListenerRef.off(); // Odadan çıkarken Firebase dinleyicisini kapat
-            }
+            if (msgListenerRef) msgListenerRef.off();
+            if (canvasListenerRef) canvasListenerRef.off();
+            if (statusListenerRef) statusListenerRef.off();
             showSearchScreen();
         }
 
         function logout() {
-            if (confirm("Hesabınızdan çıkış yapmak istediğinize emin misiniz?")) {
-                localStorage.clear();
-                myUsername = "";
-                myFriendCode = "";
+            if (confirm("Çıkış yapılsın mı?")) {
+                database.ref("status/" + myUsername).set("pasif");
+                localStorage.clear(); myUsername = ""; myFriendCode = "";
                 showScreen("auth-choice-screen");
             }
         }
