@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anlık Chat Pro</title>
+    <title>Yıldız Savaş Kutusu & Hayvanat Bahçesi Pro</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
@@ -173,7 +174,7 @@
 
     <div id="search-screen" class="screen hidden">
         <h2>Sohbet Paneli</h2>
-        <div class="token-display">🪙 Jeton Sayın: <span id="my-tokens-counter">0</span> Jeton</div>
+        <div class="token-display">🪙 Yıldız Jetonu: <span id="my-tokens-counter">0</span> Jeton</div>
         <div class="my-code-box" id="my-friend-code-display">Kodunuz: Yükleniyor...</div>
         
         <div style="text-align:center; margin-bottom: 8px;">
@@ -182,10 +183,12 @@
         </div>
 
         <div class="box-simulator-card">
-            <h4 style="font-size:14px; margin-bottom:4px;">🎁 Brawl Savaş Kutusu</h4>
+            <h4 style="font-size:14px; margin-bottom:4px;">🎁 Yıldız Savaş Kutusu</h4>
             <p style="font-size:11px; opacity:0.9; margin-bottom:6px;">50 Jeton Karşılığında Aç ve Nadir Kart/Unvan Kazan!</p>
-            <button onclick="openBrawlBox()" style="background:#ff9f43; color:#fff; width:auto; padding:6px 16px; font-size:13px; margin:0 auto; display:block; border-radius:20px; box-shadow:0 2px 4px rgba(0,0,0,0.2);">KUTU AÇ 📦</button>
+            <button onclick="openYildizBox()" style="background:#ff9f43; color:#fff; width:auto; padding:6px 16px; font-size:13px; margin:0 auto; display:block; border-radius:20px; box-shadow:0 2px 4px rgba(0,0,0,0.2);">KUTU AÇ 📦</button>
         </div>
+
+        <button class="group-btn" style="background: #ff5722; margin-top: 10px;" onclick="openZooScreen()">🐾 Hayvanat Bahçesi & Albüm</button>
 
         <div class="row-container" style="margin-top:10px;">
             <input type="number" id="friend-code-input" placeholder="Arkadaşının 7 Haneli Kodu...">
@@ -228,6 +231,23 @@
         </div>
 
         <button class="logout-btn" onclick="logout()">Hesaptan Çıkış Yap</button>
+    </div>
+
+    <div id="zoo-screen" class="screen hidden" style="background: #e8f5e9;">
+        <h2>🐾 Hayvanat Bahçesi</h2>
+        <div class="token-display" style="background:#2ecc71; color:white;">📸 Albümündeki Fotoğraflar: <span id="zoo-album-counter">0</span> / 20</div>
+        
+        <button class="logout-btn" style="background:#6c757d; margin: 5px 0;" onclick="showSearchScreen()">🔙 Panele Geri Dön</button>
+
+        <div style="width:100%; margin-top:10px;">
+            <h3 style="font-size:14px; color:#2e7d32; margin-bottom:6px; text-align:left;">📍 Canlı Alanlar (5 Dk'da bir yenilenir)</h3>
+            <div id="zoo-zones-container" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+
+        <div style="width:100%; margin-top:20px; border-top:2px dashed #81c784; padding-top:10px;">
+            <h3 style="font-size:15px; color:#1b5e20; margin-bottom:8px; text-align:left;">📖 Fotoğraf Koleksiyon Defteri</h3>
+            <div id="zoo-album-grid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px;"></div>
+        </div>
     </div>
 
     <div id="chat-screen" class="chat-container hidden">
@@ -313,20 +333,42 @@
         const database = firebase.database();
 
         const avatarFiles = ["mini.flip.jpg", "mini.squeak.jpg", "mini.sugar.jpg", "mini.dot.jpg", "mini.gus.jpg"];
-        const specialStickers = ["mini.flip.jpg", "mini.squeak.jpg", "mini.sugar.jpg", "mini.dot.jpg", "mini.gus.jpg"];
         
+        // 20 HAYVANIN TAMAMI ÖZEL EMOJİ (STICKER) LİSTESİNDE
+        const specialStickers = [
+            "miao.jpg", "yolk.jpg", "zig zag.jpg", "julio.jpg", "doogie.jpg",
+            "mini.dot.jpg", "mini.squeak.jpg", "mini.gus.jpg", "mini.sugar.jpg", "mini.flip.jpg",
+            "squeak.jpg", "flip.jpg", "dot.jpg", "gus.jpg", "sugar.jpg",
+            "blinky.jpg", "moosey.jpg", "hoppy.jpg", "bloock.jpg", "yeyet.jpg"
+        ];
+        
+        // UNVAN LİSTESİ
         const unvanList = [
-            { name: "Sıradan Çizer 🥚", class: "unvan-siradan" },
-            { name: "Ender Savaşçı ⚔️", class: "unvan-ender" },
-            { name: "Destansı Sanatçı 🎨", class: "unvan-destansi" },
+            { name: "Çaylak Çizer 🥚", class: "unvan-siradan" },
+            { name: "Usta Ressam 🎨", class: "unvan-ender" },
+            { name: "Yıldız Savaşçı ⚔️", class: "unvan-destansi" },
             { name: "Gizemli Kod Dehası 🔮", class: "unvan-gizemli" },
-            { name: "KROMATİK REKTÖR 👑", class: "unvan-kromatik" }
+            { name: "EFSANEVİ REKTÖR 👑", class: "unvan-kromatik" }
         ];
 
+        // TAM RESME SADIK 30 ÇİZİM KELİMESİ
         const wordPool = [
-            "elma", "araba", "ev", "güneş", "kedi", "köpek", "balık", "ağaç", "uçak", "top", 
-            "kitap", "muz", "çilek", "kalp", "bulut", "gözlük", "telefon", "kapı", "bilgisayar", "televizyon"
+            "dondurma", "ejderha", "robot", "pizza", "ağaç ev", "gökkuşağı",
+            "astronot", "deniz kızı", "hazine sandığı", "kaktüs", "uçan daire", "volkan",
+            "bisiklet", "yelkenli", "araba", "kale", "roket", "dinozor",
+            "kalem", "defter", "gitar", "piyano", "kedi", "köpek",
+            "güneş", "ay", "bulut", "kalp", "yıldız", "çiçek"
         ];
+
+        // HAYVANAT BAHÇESİ KATEGORİLERİ
+        const zooAnimals = {
+            ender: ["miao.jpg", "yolk.jpg", "zig zag.jpg", "julio.jpg", "doogie.jpg"],
+            destansi: ["mini.dot.jpg", "mini.squeak.jpg", "mini.gus.jpg", "mini.sugar.jpg", "mini.flip.jpg"],
+            efsanevi: ["squeak.jpg", "flip.jpg", "dot.jpg", "gus.jpg", "sugar.jpg"],
+            kromatik: ["blinky.jpg", "moosey.jpg", "hoppy.jpg", "bloock.jpg", "yeyet.jpg"]
+        };
+
+        const zooZones = ["Giriş Kapısı 🌳", "Gizemli Gölet 💧", "Derin Orman 🌲", "Karanlık Mağara 🦇", "Vahşi Safari 🦁"];
 
         let selectedAvatar = avatarFiles[0];
         let selectedGroupAvatar = avatarFiles[0]; 
@@ -334,6 +376,7 @@
         let myFriendCode = localStorage.getItem("saved_code") || "";
         let myTokens = 0;
         let myUnvanIndex = 0;
+        let myAlbum = {};
 
         let friendUsername = "";
         let chatRoomId = "";
@@ -353,7 +396,6 @@
         let activePickerId = null; 
         let activeReplyMsgId = null; 
 
-        // ELEKTRONİK SES MOTORU (Bildirim ve Oyun Sesleri İçin)
         function playAppSound(type) {
             try {
                 const ctxAudio = new (window.AudioContext || window.webkitAudioContext)();
@@ -361,19 +403,19 @@
                 const gain = ctxAudio.createGain();
                 osc.connect(gain); gain.connect(ctxAudio.destination);
                 
-                if (type === "msg") { // Yeni Mesaj Sesi (Kısa Tiz)
+                if (type === "msg") {
                     osc.frequency.setValueAtTime(587.33, ctxAudio.currentTime);
                     gain.gain.setValueAtTime(0.1, ctxAudio.currentTime);
                     osc.start(); gain.gain.exponentialRampToValueAtTime(0.01, ctxAudio.currentTime + 0.15);
                     osc.stop(ctxAudio.currentTime + 0.15);
-                } else if (type === "win") { // Kelime Bilme Sesi (Brawl Stars Sevinç Havası)
+                } else if (type === "win") {
                     osc.frequency.setValueAtTime(523.25, ctxAudio.currentTime);
                     osc.frequency.setValueAtTime(659.25, ctxAudio.currentTime + 0.1);
                     osc.frequency.setValueAtTime(783.99, ctxAudio.currentTime + 0.2);
                     gain.gain.setValueAtTime(0.15, ctxAudio.currentTime);
                     osc.start(); gain.gain.exponentialRampToValueAtTime(0.01, ctxAudio.currentTime + 0.4);
                     osc.stop(ctxAudio.currentTime + 0.4);
-                } else if (type === "box") { // Kutu Açma Sesi
+                } else if (type === "box") {
                     osc.type = "sawtooth"; osc.frequency.setValueAtTime(220, ctxAudio.currentTime);
                     osc.frequency.exponentialRampToValueAtTime(880, ctxAudio.currentTime + 0.3);
                     gain.gain.setValueAtTime(0.1, ctxAudio.currentTime);
@@ -403,6 +445,19 @@
                         updateSettingsPickerSelection();
                         setUserOnlineStatus();
                         showSearchScreen();
+                        loadUserAlbum();
+
+                        // En son aktif sohbet odası varsa geri yükleme yapısı
+                        const lastChat = localStorage.getItem("current_chat_room");
+                        if (lastChat) {
+                            const saved = JSON.parse(lastChat);
+                            isGroupChat = saved.isGroup;
+                            chatRoomId = saved.roomId;
+                            activeGroupCode = saved.groupCode;
+                            gameObjectRoomId = isGroupChat ? "group_" + activeGroupCode : "room_" + chatRoomId;
+                            activeDbPath = saved.dbPath;
+                            initChatRoom(saved.title, saved.avatar, saved.dbPath);
+                        }
                     } else {
                         localStorage.clear();
                         showScreen("auth-choice-screen");
@@ -538,10 +593,8 @@
             loadFriendsList(); loadGroupsList();
         }
 
-        // BRAWL BOX KUTU AÇMA SİSTEMİ
-        function openBrawlBox() {
-            if (myTokens < 50) return alert("Kutu açmak için en az 50 Jetonun olmalı! Sohbet ederek veya oyun oynayarak jeton topla.");
-            
+        function openYildizBox() {
+            if (myTokens < 50) return alert("Kutu açmak için en az 50 Yıldız Jetonun olmalı!");
             myTokens -= 50;
             database.ref(`users/${myUsername}/tokens`).set(myTokens);
             playAppSound("box");
@@ -553,19 +606,161 @@
                 if (myUnvanIndex < unvanList.length - 1) {
                     myUnvanIndex++;
                     database.ref(`users/${myUsername}/unvanIndex`).set(myUnvanIndex);
-                    alert(`📦 KUTUDAN YENİ KART ÇIKTI!\n🎉 Tebrikler! Yeni Unvan Kazandın: ${unvanList[myUnvanIndex].name}`);
+                    alert(`📦 KUTUDAN YENİ KART ÇIKTI!\n🎉 Yeni Unvan Kazandın: ${unvanList[myUnvanIndex].name}`);
                 } else {
                     myTokens += 40;
                     database.ref(`users/${myUsername}/tokens`).set(myTokens);
-                    alert("📦 KUTU AÇILDI!\nZaten en yüksek unvandasın! Teselli ödülü olarak 40 Jeton iade edildi.");
+                    alert("📦 En yüksek unvandasın! 40 Jeton iade edildi.");
                 }
             } else {
                 const hediyeJeton = Math.floor(Math.random() * 60) + 15;
                 myTokens += hediyeJeton;
                 database.ref(`users/${myUsername}/tokens`).set(myTokens);
-                alert(`📦 KUTU AÇILDI!\n🪙 Şansına kutudan ${hediyeJeton} ek Jeton çıktı!`);
+                alert(`📦 KUTU AÇILDI!\n🪙 Kutudan ${hediyeJeton} Yıldız Jetonu çıktı!`);
             }
             showSearchScreen();
+        }
+
+        function openZooScreen() {
+            showScreen("zoo-screen");
+            loadUserAlbum();
+            listenZooZones();
+        }
+
+        function loadUserAlbum() {
+            database.ref(`users/${myUsername}/album`).on("value", (snapshot) => {
+                myAlbum = snapshot.val() || {};
+                const albumGrid = document.getElementById("zoo-album-grid");
+                albumGrid.innerHTML = "";
+                let totalPhotos = 0;
+                
+                Object.keys(zooAnimals).forEach(rarity => {
+                    zooAnimals[rarity].forEach(animalFile => {
+                        const hasPhoto = myAlbum[animalFile.replace('.', '_')] ? true : false;
+                        if(hasPhoto) totalPhotos++;
+
+                        const item = document.createElement("div");
+                        item.style = `background:white; border:1px solid #ccc; border-radius:8px; padding:6px; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.05); display:flex; flex-direction:column; justify-content:between;`;
+                        
+                        let borderStyle = "3px solid #6c757d"; 
+                        if(rarity === "destansi") borderStyle = "3px solid #9b59b6";
+                        if(rarity === "efsanevi") borderStyle = "3px solid #f1c40f";
+                        if(rarity === "kromatik") borderStyle = "3px solid #e74c3c";
+                        
+                        const actionButtons = hasPhoto ? `
+                            <div style="display:flex; flex-direction:column; gap:3px; margin-top:5px;">
+                                <button onclick="setAnimalAsMyAvatar('${animalFile}')" style="font-size:9px; padding:3px; background:#007bff; margin:0; width:100%;">👤 Profil Yap</button>
+                                <button onclick="setAnimalAsGroupAvatar('${animalFile}')" style="font-size:9px; padding:3px; background:#6f42c1; margin:0; width:100%;">👥 Grup Yap</button>
+                            </div>
+                        ` : `<p style="font-size:9px; color:#aaa; font-weight:bold; margin-top:5px;">🔒 Kilitli</p>`;
+
+                        item.innerHTML = `
+                            <div>
+                                <img src="${animalFile}" style="width:100%; height:60px; object-fit:cover; border-radius:4px; ${hasPhoto ? borderStyle : 'filter:grayscale(1); opacity:0.4;'}">
+                                <span style="font-size:9px; font-weight:bold; display:block; margin-top:2px; word-break:break-all; color:#333;">${animalFile.replace('.jpg','')}</span>
+                                <span style="font-size:8px; color:#888; display:block; font-weight:bold;">${rarity.toUpperCase()}</span>
+                            </div>
+                            ${actionButtons}
+                        `;
+                        albumGrid.appendChild(item);
+                    });
+                });
+                document.getElementById("zoo-album-counter").innerText = totalPhotos;
+            });
+        }
+
+        function setAnimalAsMyAvatar(animalFile) {
+            if (!confirm(`"${animalFile.replace('.jpg','')}" profil resmin olsun mu?`)) return;
+            selectedAvatar = animalFile;
+            database.ref(`users/${myUsername}/avatar`).set(animalFile).then(() => {
+                alert("Profil resmin güncellendi! 🎉");
+                updateSettingsPickerSelection();
+            });
+        }
+
+        function setAnimalAsGroupAvatar(animalFile) {
+            if (!isGroupChat || !activeGroupCode) {
+                return alert("Önce bir grup sohbetine girip oradan Hayvanat Bahçesini açmalısın!");
+            }
+            if (!confirm(`"${animalFile.replace('.jpg','')}" grup resmi olsun mu?`)) return;
+            database.ref(`groups/${activeGroupCode}/avatar`).set(animalFile).then(() => {
+                alert("Grup resmi güncellendi! 👥🎉");
+            });
+        }
+
+        function listenZooZones() {
+            const fiveMinutesInMs = 5 * 60 * 1000;
+            const currentPeriod = Math.floor(Date.now() / fiveMinutesInMs);
+
+            database.ref(`zoo_live_zones/${currentPeriod}`).once("value", (snapshot) => {
+                if (!snapshot.exists()) {
+                    const generatedZones = {};
+                    zooZones.forEach(zone => {
+                        generatedZones[zone.replace(/[^a-zA-Z0-9]/g, "_")] = generateRandomAnimal();
+                    });
+                    database.ref(`zoo_live_zones/${currentPeriod}`).set(generatedZones);
+                    database.ref(`zoo_live_zones/${currentPeriod - 1}`).remove();
+                }
+            });
+
+            database.ref(`zoo_live_zones/${currentPeriod}`).on("value", (snapshot) => {
+                const container = document.getElementById("zoo-zones-container");
+                container.innerHTML = "";
+                if(snapshot.exists()) {
+                    const data = snapshot.val();
+                    zooZones.forEach(zone => {
+                        const zoneKey = zone.replace(/[^a-zA-Z0-9]/g, "_");
+                        const animal = data[zoneKey];
+                        if(!animal) return;
+
+                        const card = document.createElement("div");
+                        card.style = "background:white; padding:10px; border-radius:8px; display:flex; align-items:center; justify-content:between; border-left:5px solid #2e7d32; box-shadow:0 2px 4px rgba(0,0,0,0.05);";
+                        
+                        let badgeColor = "#6c757d";
+                        if(animal.rarity === "destansi") badgeColor = "#9b59b6";
+                        if(animal.rarity === "efsanevi") badgeColor = "#f1c40f";
+                        if(animal.rarity === "kromatik") badgeColor = "#e74c3c";
+
+                        const alreadyOwned = myAlbum[animal.file.replace('.', '_')] ? "✅ Çekildi" : "📸 Fotoğraf Çek";
+                        const btnDisabled = myAlbum[animal.file.replace('.', '_')] ? "disabled style='background:#6c757d;'" : "";
+
+                        card.innerHTML = `
+                            <div style="flex:1; display:flex; align-items:center; gap:10px;">
+                                <img src="${animal.file}" style="width:45px; height:45px; border-radius:50%; object-fit:cover; border:2px solid ${badgeColor};">
+                                <div>
+                                    <strong style="font-size:13px; color:#333;">${zone}</strong>
+                                    <div style="font-size:11px; margin-top:2px;">
+                                        <span>Gelen: <strong>${animal.file.replace('.jpg','')}</strong></span>
+                                        <span style="background:${badgeColor}; color:white; padding:1px 4px; border-radius:4px; font-size:9px; margin-left:4px; font-weight:bold;">${animal.rarity.toUpperCase()}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button ${btnDisabled} onclick="takeAnimalPhoto('${animal.file}')" style="width:auto; padding:6px 12px; font-size:12px; background:#2ecc71; margin:0;">${alreadyOwned}</button>
+                        `;
+                        container.appendChild(card);
+                    });
+                }
+            });
+        }
+
+        function generateRandomAnimal() {
+            const roll = Math.random() * 100;
+            let rarity = "ender";
+            if (roll < 5) rarity = "kromatik";
+            else if (roll < 20) rarity = "efsanevi";
+            else if (roll < 50) rarity = "destansi";
+            else rarity = "ender";
+
+            const list = zooAnimals[rarity];
+            return { file: list[Math.floor(Math.random() * list.length)], rarity: rarity };
+        }
+
+        function takeAnimalPhoto(animalFile) {
+            const key = animalFile.replace('.', '_');
+            if (myAlbum[key]) return;
+            database.ref(`users/${myUsername}/album/${key}`).set({ captured: true, date: Date.now() });
+            playAppSound("win");
+            alert(`📸 "${animalFile.replace('.jpg','')}" fotoğrafı albüme eklendi!`);
         }
 
         function updateProfileSettings() {
@@ -712,7 +907,6 @@
             groupPicListenerRef = database.ref(`groups/${gCode}/avatar`);
             groupPicListenerRef.on("value", (picSnap) => { if(picSnap.exists()) document.getElementById("chat-partner-avatar").src = picSnap.val(); });
 
-            // GRUP İÇİ CANLI AKTİF KİŞİLER LİSTESİ MOTORU
             database.ref(`groups/${gCode}/active_now/${myUsername}`).set({ name: myUsername, avatar: selectedAvatar });
             database.ref(`groups/${gCode}/active_now/${myUsername}`).onDisconnect().remove();
 
@@ -739,6 +933,10 @@
             showScreen("chat-screen");
             listenMessages(dbPath);
             listenGameStatus();
+
+            localStorage.setItem("current_chat_room", JSON.stringify({
+                isGroup: isGroupChat, title: title, avatar: avatar, dbPath: dbPath, roomId: chatRoomId, groupCode: activeGroupCode
+            }));
         }
 
         function listenMessages(dbPath) {
@@ -779,7 +977,6 @@
             const mb = document.createElement("div"); mb.className = "msg";
             mb.onclick = (e) => { e.stopPropagation(); openAdvancedActionMenu(msgId, data, mb); };
             
-            // Eğer yanıt verilmiş bir mesajsa üstünde önizleme çubuğu göster
             if (data.replyTo) {
                 const rp = document.createElement("div"); rp.className = "replied-msg-preview";
                 rp.innerText = `@${data.replyTo.user}: ${data.replyTo.text}`;
@@ -797,13 +994,11 @@
             container.appendChild(wrapper); container.scrollTop = container.scrollHeight;
         }
 
-        // GELİŞMİŞ AKSİYON MENÜSÜ (Yanıtla, Sil ve Reaksiyonlar Bir Arada)
         function openAdvancedActionMenu(msgId, data, element) {
             closeActiveReactionPicker();
             const picker = document.createElement("div");
             picker.className = "reaction-picker-menu"; picker.id = "picker-" + msgId;
             
-            // Emojiler
             ["❤️", "😂", "🔥", "👍"].forEach(emo => {
                 const span = document.createElement("span"); span.className = "react-emoji-option"; span.innerText = emo;
                 span.onclick = (e) => { e.stopPropagation(); saveReaction(msgId, emo); };
@@ -812,12 +1007,10 @@
 
             const div = document.createElement("div"); div.className = "action-divider"; picker.appendChild(div);
 
-            // YANITLA BUTONU
             const rBtn = document.createElement("span"); rBtn.className = "action-menu-btn"; rBtn.innerText = "Yanıtla";
             rBtn.onclick = (e) => { e.stopPropagation(); enterReplyMode(msgId, data); };
             picker.appendChild(rBtn);
 
-            // SİL BUTONU (Sadece kendi mesajını silebilir)
             if (data.sender === myUsername) {
                 const dBtn = document.createElement("span"); dBtn.className = "action-menu-btn del"; dBtn.innerText = "Sil";
                 dBtn.onclick = (e) => { e.stopPropagation(); deleteTargetMessage(msgId); };
@@ -841,9 +1034,7 @@
         function cancelReplyMode() { activeReplyMsgId = null; document.getElementById("chat-reply-bar").classList.add("hidden"); }
 
         function deleteTargetMessage(msgId) {
-            if(confirm("Bu mesajı silmek istiyor musun?")) {
-                database.ref(`${activeDbPath}/${msgId}`).remove();
-            }
+            if(confirm("Bu mesajı silmek istiyor musun?")) { database.ref(`${activeDbPath}/${msgId}`).remove(); }
             closeActiveReactionPicker();
         }
 
@@ -860,19 +1051,16 @@
 
             if (currentPainter && currentPainter !== myUsername && currentGameWord && text.toLowerCase() === currentGameWord.toLowerCase()) {
                 playAppSound("win");
-                myTokens += 15; // Kelime bilene +15 Jeton hediye!
+                myTokens += 15;
                 database.ref(`users/${myUsername}/tokens`).set(myTokens);
                 sendSystemMessage(`🎉 ${myUsername} KELİMEYİ DOĞRU BİLDİ VE +15 JETON KAZANDI! Kelime: ${currentGameWord} idi!`);
                 resetGameRound(); input.value = ""; return;
             }
 
-            // Normal sohbet eden de 1 jeton kazanır
             myTokens += 1;
             database.ref(`users/${myUsername}/tokens`).set(myTokens);
 
             const payload = { sender: myUsername, message: text, avatar: selectedAvatar, type: "text", timestamp: Date.now() };
-            
-            // Eğer bir mesaj yanıtlanıyorsa veri yapısına ekle
             if (activeReplyMsgId) {
                 payload.replyTo = {
                     msgId: activeReplyMsgId,
@@ -905,7 +1093,7 @@
         function analyzeMyEmojis() {
             const input = document.getElementById("emoji-test-input"); const emojis = input.value.trim(); if (!emojis) return alert("Emojilerini yapıştır!");
             let gamerType = "Maceracı Ruhlu Oyuncu 🤠", description = "Heyecanlı, enerjik ve chat yapmayı çok seviyor!";
-            if (emojis.includes("💻") || emojis.includes("🔥")) { gamerType = "Brawl Stars Şampiyonu & Yazılımcı 🚀"; description = "Kutulardan efsanevi çıkarmayı hedefleyen lider!"; }
+            if (emojis.includes("💻") || emojis.includes("🔥")) { gamerType = "Yıldız Savaşçısı & Yazılımcı 🚀"; description = "Kutulardan efsanevi unvan çıkarmayı hedefleyen lider!"; }
             sendSystemMessage(`🔮 EMOJİ KİŞİLİK ANALİZİ 🔮\n👤 Oyuncu: ${myUsername}\n🎯 Oyuncu Tipi: ${gamerType}\n📝 Analiz: ${description}`);
             input.value = ""; document.getElementById("emoji-game-panel").classList.add("hidden");
         }
@@ -976,10 +1164,23 @@
         }
 
         function startNewGameRound() {
-            const randomWord = wordPool[Math.floor(Math.random() * wordPool.length)];
             database.ref(`canvas_games/${gameObjectRoomId}/lines`).remove();
+            let randomWord = "";
+            
+            // %15 ihtimalle "ÖZEL ÇİZİM" tetiklenir
+            if (Math.random() < 0.15) {
+                randomWord = "ÖZEL ÇİZİM: İstediğini Çiz! 🌟";
+            } else {
+                randomWord = wordPool[Math.floor(Math.random() * wordPool.length)];
+            }
+            
             database.ref(`canvas_games/${gameObjectRoomId}/status`).set({ painter: myUsername, word: randomWord });
-            sendSystemMessage(`🎮 Yeni oyun başladı! Ressam: ${myUsername}. Doğru tahmin edene 15 Jeton! 🪙`);
+            
+            if (randomWord.startsWith("ÖZEL ÇİZİM")) {
+                sendSystemMessage(`... Özel Tur Başladı! Ressam ${myUsername} ne çizeceğine kendisi karar veriyor! 🤔`);
+            } else {
+                sendSystemMessage(`🎮 Yeni oyun başladı! Ressam: ${myUsername}. Doğru tahmin edene 15 Yıldız Jetonu! 🪙`);
+            }
         }
 
         function resetGameRound() { database.ref(`canvas_games/${gameObjectRoomId}`).remove(); }
@@ -992,6 +1193,7 @@
             if (statusListenerRef) statusListenerRef.off(); 
             if (groupPicListenerRef) groupPicListenerRef.off();
             if (groupActiveMembersListenerRef) groupActiveMembersListenerRef.off();
+            localStorage.removeItem("current_chat_room");
             showSearchScreen(); 
         }
 
